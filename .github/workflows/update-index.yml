@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: update-topic-index
+  cancel-in-progress: false
+
 jobs:
   update-index:
     runs-on: ubuntu-latest
@@ -25,10 +29,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout main 2>/dev/null || git checkout -b main
+          git pull --rebase origin main || true
           git add README.md
           if git diff --cached --quiet; then
             echo "No changes to commit."
             exit 0
           fi
           git commit -m "chore: regenerate topic index [skip ci]"
+          git pull --rebase origin main
           git push origin main
